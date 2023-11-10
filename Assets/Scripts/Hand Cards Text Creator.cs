@@ -6,10 +6,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Mathematics;
 using UnityEngine.TextCore.Text;
+using System.Linq;
 
 public class HandCardsTextCreator : MonoBehaviour
 {
     [HideInInspector]public GameObject text, TextS, TextW, TextN, TextE;
+
     string cs, ds, hs, ss;
 
     CardContorller cardContorller;
@@ -40,6 +42,22 @@ public class HandCardsTextCreator : MonoBehaviour
                 ss += str[6];
             }
         }
+
+        //Count and display HCP
+        List<char> cards =  (cs + ds + hs + ss).ToList();
+        int HCP = 0;
+        foreach (char card in cards){
+            Debug.Log(card);
+            if (card == 'A')
+                HCP+=4;
+            else if (card == 'K')
+                HCP+=3;
+            else if (card == 'Q')
+                HCP+=2;
+            else if (card == 'J')
+                HCP+=1;
+        }
+        GameObject.FindWithTag("tHCPText").GetComponent<TextMeshPro>().text = "HCP : " + HCP.ToString();
 
         text0.text = $"S : {ss}\nH : {hs}\nD : {ds}\nC : {cs}\n";
         TextS.transform.position = new Vector3(-3.1f, -3.6f);
