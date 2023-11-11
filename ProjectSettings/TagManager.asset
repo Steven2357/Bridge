@@ -9,6 +9,9 @@ TagManager:
   - tCardContorller
   - tHandCardTextContorller
   - tHCPText
+  - tNumberOfHand
+  - tNSVUL
+  - tEWVUL
   layers:
   - Default
   - TransparentFX

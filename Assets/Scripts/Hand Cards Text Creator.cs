@@ -47,7 +47,6 @@ public class HandCardsTextCreator : MonoBehaviour
         List<char> cards =  (cs + ds + hs + ss).ToList();
         int HCP = 0;
         foreach (char card in cards){
-            Debug.Log(card);
             if (card == 'A')
                 HCP+=4;
             else if (card == 'K')
