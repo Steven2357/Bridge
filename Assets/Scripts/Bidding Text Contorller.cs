@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,16 +19,26 @@ public class BiddingTextContorller : MonoBehaviour
     public GameObject objCardContorller;
 
     //Bidding 
-    string S = "P";
-    string W = "P";
-    string N = "P";
-    string E = "P";
+    string S = "None";
+    string W = "None";
+    string N = "None";
+    string E = "None";
     List<string> Bidsort = new List<string> {"1C", "1D", "1H", "1S", "1N", "2C", "2D", "2H", "2S", "2N", "3C", "3D", "3H", "3S", "3N", "4C", "4D", "4H", "4S", "4N", "5C", "5D", "5H", "5S", "5N", "6C", "6D", "6H", "6S", "6N", "7C", "7D", "7H", "7S", "7N"};
     List<string> BidsortAll = new List<string> {"P", "X", "XX", "1C", "1D", "1H", "1S", "1N", "2C", "2D", "2H", "2S", "2N", "3C", "3D", "3H", "3S", "3N", "4C", "4D", "4H", "4S", "4N", "5C", "5D", "5H", "5S", "5N", "6C", "6D", "6H", "6S", "6N", "7C", "7D", "7H", "7S", "7N"};
+    GameObject NSVUL;
+    GameObject EWVUL;
+    GameObject NumberOfHand;
+    List<int> NSVULs = new List<int>() {2, 4, 5, 7, 10, 12, 13, 15};
+    List<int> EWVULs = new List<int>() {3, 4, 6, 7, 9, 10, 13, 16};
+
     // Start is called before the first frame update
     void Start()
     {
         textCreator = FindObjectOfType<TextCreator>();
+        NumberOfHand = GameObject.FindWithTag("tNumberOfHand");
+        NSVUL = GameObject.FindWithTag("tNSVUL");
+        EWVUL = GameObject.FindWithTag("tEWVUL");
+        CheckDealer();
     }
 
     // Update is called once per frame
@@ -39,17 +50,13 @@ public class BiddingTextContorller : MonoBehaviour
                 if (Bidsort.Contains(bid)){
                     if (CanBid(bid)){
                         BidS(bid);
-                        noc++;
                     }
                 }else if (bid == "P"){
                     BidS(bid);
-                    noc++;
                 }else if (bid == "X" && CanX()){
                     BidS(bid);
-                    noc++;
                 }else if (bid == "XX" && CanXX()){
                     BidS(bid);
-                    noc++;
                 }
             }
             clicked = false;
@@ -68,10 +75,10 @@ public class BiddingTextContorller : MonoBehaviour
         if (! isBidding){
             isBidding = true;
             noc = 2;
-            S = "P";
-            W = "P";
-            N = "P";
-            E = "P";
+            S = "None";
+            W = "None";
+            N = "None";
+            E = "None";
             Destroy(GameObject.FindGameObjectWithTag("tCardContorller"));
             Destroy(GameObject.FindGameObjectWithTag("tHandCardTextContorller"));
             foreach (GameObject obj in GameObject.FindGameObjectsWithTag("tBiddingText")){
@@ -82,40 +89,58 @@ public class BiddingTextContorller : MonoBehaviour
             }
             var cardContorller = Instantiate(objCardContorller);
             cardContorller.GetComponent<CardContorller>().enabled = true;
+
+            NumberOfHand.GetComponent<TextMeshPro>().text = (Int32.Parse(NumberOfHand.GetComponent<TextMeshPro>().text)+1).ToString();
+
+            //change VUL color
+            if (NSVULs.Contains(Int32.Parse(NumberOfHand.GetComponent<TextMeshPro>().text)%16))
+                NSVUL.GetComponent<SpriteRenderer>().color = new Color32(255, 0, 0, 255);
+            else{
+                NSVUL.GetComponent<SpriteRenderer>().color = new Color32(0, 0, 0, 255);
+            }
+            if (EWVULs.Contains(Int32.Parse(NumberOfHand.GetComponent<TextMeshPro>().text)%16))
+                EWVUL.GetComponent<SpriteRenderer>().color = new Color32(255, 0, 0, 255);
+            else{
+                EWVUL.GetComponent<SpriteRenderer>().color = new Color32(0, 0, 0, 255);
+            }
+
+            CheckDealer();
         }
     }
 
     void BidS(string bid){
         S = bid;
         textCreator.CreateText(obj, S, 0, 0, 1, noc);
-        if(N=="P"&&E=="P"&&S=="P"){
+        if(N=="P"&&E=="P"&&S=="P"&&W!="None"){
             EndBidding();
             return;
         }
 
         //west
-        W = "P";
+        W = BidW();
         textCreator.CreateText(obj, W, 0, 0, 2, noc);
-        if(W=="P"&&E=="P"&&S=="P"){
+        if(W=="P"&&E=="P"&&S=="P"&&N!="None"){
             EndBidding(); 
             return;
         }
                 
-        //north(an expection : All Pass)
-        N = "P";
+        //north
+        N = BidN();
         textCreator.CreateText(obj, N, 0, 0, 3, noc);
-        if(W=="P"&&N=="P"&&S=="P"&&noc!=2){
+        if(W=="P"&&N=="P"&&S=="P"&&E!="None"){
             EndBidding(); 
             return;
         }
 
         //east
-        E = "P";
+        E = BidE();
         textCreator.CreateText(obj, E, 0, 0, 4, noc);
-        if(N=="P"&&E=="P"&&W=="P"){
+        if(N=="P"&&E=="P"&&W=="P"&&S!="None"){
             EndBidding();
             return;
         }
+
+        noc++;
     }
 
     bool CanBid(string bid){
@@ -146,5 +171,39 @@ public class BiddingTextContorller : MonoBehaviour
             return true;
         else
             return false;
+    }
+
+    string BidW(){
+        return "P";
+    }
+
+    string BidN(){
+        return "P";
+    }
+
+    string BidE(){
+        return "P";
+    }
+
+    void CheckDealer(){
+        if (Int32.Parse(NumberOfHand.GetComponent<TextMeshPro>().text) % 4 == 0){
+            W = BidW();
+            textCreator.CreateText(obj, W, 0, 0, 2, noc);
+            N = BidN();
+            textCreator.CreateText(obj, N, 0, 0, 3, noc);
+            E = BidE();
+            textCreator.CreateText(obj, E, 0, 0, 4, noc);
+            noc++;
+        }else if (Int32.Parse(NumberOfHand.GetComponent<TextMeshPro>().text) % 4 == 1){
+            N = BidN();
+            textCreator.CreateText(obj, N, 0, 0, 3, noc);
+            E = BidE();
+            textCreator.CreateText(obj, E, 0, 0, 4, noc);
+            noc++;
+        }else if (Int32.Parse(NumberOfHand.GetComponent<TextMeshPro>().text) % 4 == 2){
+            E = BidE();
+            textCreator.CreateText(obj, E, 0, 0, 4, noc);
+            noc++;
+        }
     }
 }
